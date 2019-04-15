@@ -1,0 +1,20 @@
+FROM mysql:5.7
+
+# Instala as dependências necessárias
+RUN apt-get update && apt-get install -y \
+    nano \
+    locales \
+    locales-all
+
+# Reorganiza o time zone e idioma do sistema
+ENV TZ=America/Recife \
+    LC_ALL=pt_BR.UTF-8 \
+    LANG=pt_BR.UTF-8 \
+    LANGUAGE=pt_BR.UTF-8
+
+RUN echo $TZ > /etc/timezone && \
+    apt-get update && apt-get install -y tzdata && \
+    rm /etc/localtime && \
+    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && \
+    dpkg-reconfigure -f noninteractive tzdata && \
+    apt-get clean

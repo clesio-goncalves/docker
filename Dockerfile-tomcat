@@ -1,0 +1,32 @@
+FROM tomcat:9.0.16-jre8-slim
+
+# Instala as dependências necessárias
+RUN apt-get update && apt-get install -y \
+    nano \
+    locales \
+    locales-all
+
+# Reorganiza o time zone e idioma do sistema
+ENV TZ=America/Recife \
+    LC_ALL=pt_BR.UTF-8 \
+    LANG=pt_BR.UTF-8 \
+    LANGUAGE=pt_BR.UTF-8
+
+RUN echo $TZ > /etc/timezone && \
+    apt-get update && apt-get install -y tzdata && \
+    rm /etc/localtime && \
+    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && \
+    dpkg-reconfigure -f noninteractive tzdata && \
+    apt-get clean
+
+# Cria variável de ambiente para o tomcat
+ENV CATALINA_HOME /usr/local/tomcat
+
+#copia o arquivo da aplicacao
+ADD siga.war $CATALINA_HOME/webapps/
+ADD pac.war $CATALINA_HOME/webapps/
+
+#copia os arquivos de gerenciamento web do apache tomcat
+COPY ./tomcat/tomcat-users/tomcat-users.xml $CATALINA_HOME/conf/
+COPY ./tomcat/manager/context.xml $CATALINA_HOME/webapps/manager/META-INF/
+COPY ./tomcat/host-manager/context.xml $CATALINA_HOME/webapps/host-manager/META-INF/

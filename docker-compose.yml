@@ -1,0 +1,54 @@
+version: '3.1'
+
+services:
+  mysql:
+    container_name: mysql
+    build:
+      dockerfile: Dockerfile-mysql
+      context: .
+    restart: always
+    environment: 
+      - MYSQL_ROOT_PASSWORD=ifti@c4p4umysql
+    ports:
+      - "3306:3306"
+    networks:
+      - tomcat_network
+      - phpmyadmin_network
+    volumes:
+      - dados_mysql:/var/lib/mysql
+
+  tomcat:
+    container_name: tomcat
+    build:
+      dockerfile: Dockerfile-tomcat
+      context: .
+    restart: always
+    ports:
+      - "8080:8080"
+    networks:
+      - tomcat_network
+    depends_on:
+      - mysql
+
+  phpmyadmin:
+    container_name: phpmyadmin
+    image: phpmyadmin/phpmyadmin:latest
+    restart: always
+    ports:
+      - "8090:80"
+    networks:
+      - phpmyadmin_network
+    environment:
+      - PMA_ARBITRARY=1
+    depends_on:
+      - mysql
+
+networks:
+  tomcat_network:
+    driver: bridge
+  phpmyadmin_network:
+    driver: bridge
+
+volumes:
+  dados_mysql:
+    driver: local
